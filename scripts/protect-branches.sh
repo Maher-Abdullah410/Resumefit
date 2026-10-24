@@ -4,7 +4,8 @@
 # Usage:   ./scripts/protect-branches.sh OWNER/REPO [required_approvals]
 set -euo pipefail
 REPO="${1:?usage: $0 OWNER/REPO [required_approvals]}"
-APPROVALS="${2:-1}"   # use 0 if you work alone and cannot approve your own pull request
+APPROVALS="${2:-1}"   # use 0 if you work alone: GitHub does not let you approve your own pull request
+if [ "$APPROVALS" -gt 0 ]; then CODE_OWNERS=true; else CODE_OWNERS=false; fi
 
 for BRANCH in main develop; do
   echo "Protecting $REPO:$BRANCH ..."
@@ -15,7 +16,7 @@ for BRANCH in main develop; do
   "required_pull_request_reviews": {
     "required_approving_review_count": $APPROVALS,
     "dismiss_stale_reviews": true,
-    "require_code_owner_reviews": true
+    "require_code_owner_reviews": $CODE_OWNERS
   },
   "restrictions": null,
   "required_linear_history": true,

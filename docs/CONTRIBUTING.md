@@ -11,7 +11,7 @@
 Flow: `feature/*` -> pull request -> `develop` -> pull request -> `main`.
 
 ## Protection rules (see `scripts/protect-branches.sh`)
-- Pull request required, at least 1 approval, code-owner review required, stale approvals dismissed
+- Pull request required; with a team: at least 1 approval and code-owner review, stale approvals dismissed (working alone: set approvals to 0, because GitHub does not let you approve your own pull request)
 - Status checks `backend` and `frontend` must pass, branch must be up to date
 - No force pushes, no branch deletion, linear history, admins included
 - Local safety net: `git config core.hooksPath .githooks` blocks direct pushes to `main` and `develop`
