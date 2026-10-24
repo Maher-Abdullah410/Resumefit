@@ -1,0 +1,11 @@
+#!/bin/sh
+# Local safety net: block direct pushes to protected branches (work on feature/* and open a PR).
+# Enable once per clone:  git config core.hooksPath .githooks
+while read local_ref local_sha remote_ref remote_sha; do
+  case "$remote_ref" in
+    refs/heads/main|refs/heads/develop)
+      echo "Direct push to '${remote_ref#refs/heads/}' is blocked. Push a feature branch and open a pull request."
+      exit 1;;
+  esac
+done
+exit 0
