@@ -26,4 +26,6 @@ export const api = {
   refresh: () => request('/auth/refresh', { method: 'POST' }),
   logout: () => request('/auth/logout', { method: 'POST' }),
   me: () => request('/users/me'),
+  listAnalyses: () => request('/analyses'),
+  createAnalysis: (body) => request('/analyses', { method: 'POST', body }),
 }
