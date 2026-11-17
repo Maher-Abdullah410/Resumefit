@@ -3,11 +3,11 @@
 A web application that tailors a resume to a job description with AI and simulates ATS screening.
 Final year project, Dept. of Software Engineering Technology, Punjab Tianjin University of Technology.
 
-**Status (Week 6):** authentication and the first end-to-end ATS analysis slice are implemented, including Gemini-powered resume improvement suggestions.
-Resume matching uses a deterministic skills and keyword coverage engine. AI rewriting and export are planned follow-up features.
+**Status:** authentication and an end-to-end resume analysis workflow are implemented, including PDF text extraction, ATS-style matching, Gemini-powered bullet rewrites and cover letters, and print-to-PDF export.
+Resume matching uses a deterministic skills and keyword coverage engine; scores are estimates, not hiring decisions.
 
 ## Tech stack
-React + Tailwind CSS (frontend) | FastAPI + SQLAlchemy + Alembic (backend) | PostgreSQL | bcrypt + JWT (security)
+React + Tailwind CSS (frontend) | FastAPI + SQLAlchemy + Alembic + pypdf (backend) | PostgreSQL | bcrypt + JWT (security)
 
 ## Repository layout
 ```
@@ -76,7 +76,9 @@ cd frontend
 npm install
 npm run dev
 ```
-Open http://localhost:5173, create an account, and use the dashboard to analyze a resume against a job description and receive Gemini-powered suggestions.
+Open http://localhost:5173, create an account, and use the dashboard to upload a PDF or paste a resume, analyze it against a job description, review Gemini-powered rewrites, and export a tailored copy.
+
+Keep the backend running in a separate terminal while using the frontend. The Vite proxy forwards API requests to `http://127.0.0.1:8000`; set `RESUMEFIT_API_TARGET` if your backend uses a different address. A proxy `ECONNREFUSED` means the backend is not reachable; start it from `backend/` with `.\.venv\Scripts\python.exe -m uvicorn app.main:app --reload --host 127.0.0.1 --port 8000`.
 
 ### 5. Run the tests
 Create a separate empty PostgreSQL database named `resumefit_test` in pgAdmin. Tests delete and recreate tables in this database, so do not point `TEST_DATABASE_URL` at your normal application database.
@@ -102,8 +104,13 @@ pytest --cov=app
 |---|---|
 | `POST /api/v1/analyses` | Validate resume and job description text, calculate an ATS-style match, generate Gemini improvement suggestions, and save the result for the signed-in user |
 | `GET /api/v1/analyses` | List the signed-in user's saved analysis results, newest first |
+| `POST /api/v1/analyses/extract` | Extract selectable text from an authenticated PDF upload (5 MB, 50-page limit) |
+| `GET /api/v1/analyses/{id}` | Retrieve a saved analysis and its resume/job text for its owner |
+| `DELETE /api/v1/analyses/{id}` | Delete one of the signed-in user's saved analyses |
+| `POST /api/v1/analyses/{id}/rewrite` | Generate an AI rewrite for a selected resume bullet |
+| `POST /api/v1/analyses/{id}/cover-letter` | Generate an AI cover-letter draft from the saved resume and job |
 
-The score combines detected skill coverage (70%) and job-keyword coverage (30%) when both are available. If only one category is detected, that category determines the score. Analysis inputs are stored for the user's history but are not returned by the API. Resume text and job descriptions are sent to Gemini to generate suggestions, so configure `GEMINI_API_KEY` before analyzing. The deterministic score is informational, not an AI-generated rewrite or a hiring decision. The database migration is applied with `alembic upgrade head`.
+The score combines detected skill coverage (70%) and job-keyword coverage (30%) when both are available. If only one category is detected, that category determines the score; user-added keywords are included in keyword coverage. Analysis inputs are stored for the user's history and returned only from the owner-scoped detail endpoint. Resume text and job descriptions are sent to Gemini for suggestions, rewrites, and cover letters, so configure `GEMINI_API_KEY` before using those features. If Gemini is unavailable, the ATS score is still saved and the result includes an explicit suggestions error. PDF extraction is performed with pypdf; uploaded files are not retained. Apply database changes with `alembic upgrade head`.
 
 ## Security highlights
 - Passwords hashed with **bcrypt (cost 12)**; the plain password is never stored or logged

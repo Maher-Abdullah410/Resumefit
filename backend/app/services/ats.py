@@ -53,7 +53,9 @@ def _extract_keywords(text: str, excluded: set[str], limit: int = 20) -> list[st
     return ranked[:limit]
 
 
-def analyze_resume(resume_text: str, job_description: str) -> dict:
+def analyze_resume(
+    resume_text: str, job_description: str, custom_keywords: list[str] | None = None
+) -> dict:
     """Return a reproducible ATS estimate based on job-skill and keyword coverage."""
     resume = resume_text.casefold()
     job_skills = _extract_skills(job_description)
@@ -63,6 +65,10 @@ def analyze_resume(resume_text: str, job_description: str) -> dict:
 
     skill_words = {word for skill in job_skills for word in _WORD_RE.findall(skill)}
     job_keywords = _extract_keywords(job_description, skill_words)
+    for keyword in custom_keywords or []:
+        normalized_keyword = keyword.strip().casefold()
+        if normalized_keyword and normalized_keyword not in job_keywords:
+            job_keywords.append(normalized_keyword)
     matched_keywords = [
         keyword for keyword in job_keywords if _contains_phrase(resume, keyword)
     ]

@@ -1,7 +1,7 @@
 import uuid
 from datetime import datetime
 
-from sqlalchemy import DateTime, ForeignKey, Index, Integer, JSON, Text, Uuid, func
+from sqlalchemy import DateTime, ForeignKey, Index, Integer, JSON, String, Text, Uuid, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.db.base import Base
@@ -14,6 +14,8 @@ class ResumeAnalysis(Base):
     user_id: Mapped[uuid.UUID] = mapped_column(
         Uuid, ForeignKey("users.id", ondelete="CASCADE"), nullable=False
     )
+    job_title: Mapped[str] = mapped_column(String(120), nullable=False, default="Resume analysis")
+    custom_keywords: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
     resume_text: Mapped[str] = mapped_column(Text, nullable=False)
     job_description: Mapped[str] = mapped_column(Text, nullable=False)
     ats_score: Mapped[int] = mapped_column(Integer, nullable=False)
@@ -22,6 +24,7 @@ class ResumeAnalysis(Base):
     matched_keywords: Mapped[list[str]] = mapped_column(JSON, nullable=False)
     missing_keywords: Mapped[list[str]] = mapped_column(JSON, nullable=False)
     suggestions: Mapped[list[str]] = mapped_column(JSON, nullable=False, default=list)
+    suggestions_error: Mapped[str | None] = mapped_column(Text, nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), nullable=False, server_default=func.now()
     )
