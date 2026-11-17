@@ -8,6 +8,7 @@ from app.models.analysis import ResumeAnalysis
 from app.models.user import User
 from app.schemas.analysis import AnalysisCreate, AnalysisOut
 from app.services.ats import analyze_resume
+from app.services.gemini import generate_resume_suggestions
 
 router = APIRouter(prefix="/analyses", tags=["analyses"])
 
@@ -19,10 +20,12 @@ def create_analysis(
     current_user: User = Depends(get_current_user),
 ):
     result = analyze_resume(body.resume_text, body.job_description)
+    suggestions = generate_resume_suggestions(body.resume_text, body.job_description)
     analysis = ResumeAnalysis(
         user_id=current_user.id,
         resume_text=body.resume_text,
         job_description=body.job_description,
+        suggestions=suggestions,
         **result,
     )
     db.add(analysis)

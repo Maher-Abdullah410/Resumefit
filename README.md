@@ -3,8 +3,8 @@
 A web application that tailors a resume to a job description with AI and simulates ATS screening.
 Final year project, Dept. of Software Engineering Technology, Punjab Tianjin University of Technology.
 
-**Status (Week 6):** authentication and the first end-to-end ATS analysis slice are implemented.
-Resume analysis uses a deterministic skills and keyword coverage engine. AI rewriting and export are planned follow-up features.
+**Status (Week 6):** authentication and the first end-to-end ATS analysis slice are implemented, including Gemini-powered resume improvement suggestions.
+Resume matching uses a deterministic skills and keyword coverage engine. AI rewriting and export are planned follow-up features.
 
 ## Tech stack
 React + Tailwind CSS (frontend) | FastAPI + SQLAlchemy + Alembic (backend) | PostgreSQL | bcrypt + JWT (security)
@@ -55,7 +55,7 @@ pip install -r requirements-dev.txt
 Copy-Item ..\.env.example .env
 ```
 
-Edit `backend\.env` as described above. Generate a `JWT_SECRET` in PowerShell with:
+Edit `backend\.env` as described above, and set `GEMINI_API_KEY` to enable resume improvement suggestions. `GEMINI_MODEL` is optional and defaults to `gemini-3.8-flash`. Generate a `JWT_SECRET` in PowerShell with:
 
 ```powershell
 python -c "import secrets; print(secrets.token_urlsafe(48))"
@@ -76,7 +76,7 @@ cd frontend
 npm install
 npm run dev
 ```
-Open http://localhost:5173, create an account, and use the dashboard to analyze a resume against a job description.
+Open http://localhost:5173, create an account, and use the dashboard to analyze a resume against a job description and receive Gemini-powered suggestions.
 
 ### 5. Run the tests
 Create a separate empty PostgreSQL database named `resumefit_test` in pgAdmin. Tests delete and recreate tables in this database, so do not point `TEST_DATABASE_URL` at your normal application database.
@@ -100,10 +100,10 @@ pytest --cov=app
 ## Resume analysis (Week 6)
 | Endpoint | Description |
 |---|---|
-| `POST /api/v1/analyses` | Validate resume and job description text, calculate an ATS-style match, and save it for the signed-in user |
+| `POST /api/v1/analyses` | Validate resume and job description text, calculate an ATS-style match, generate Gemini improvement suggestions, and save the result for the signed-in user |
 | `GET /api/v1/analyses` | List the signed-in user's saved analysis results, newest first |
 
-The score combines detected skill coverage (70%) and job-keyword coverage (30%) when both are available. If only one category is detected, that category determines the score. Analysis inputs are stored for the user's history but are not returned by the API. This deterministic estimate is informational, not an AI-generated rewrite or a hiring decision. The database migration is applied with `alembic upgrade head`.
+The score combines detected skill coverage (70%) and job-keyword coverage (30%) when both are available. If only one category is detected, that category determines the score. Analysis inputs are stored for the user's history but are not returned by the API. Resume text and job descriptions are sent to Gemini to generate suggestions, so configure `GEMINI_API_KEY` before analyzing. The deterministic score is informational, not an AI-generated rewrite or a hiring decision. The database migration is applied with `alembic upgrade head`.
 
 ## Security highlights
 - Passwords hashed with **bcrypt (cost 12)**; the plain password is never stored or logged

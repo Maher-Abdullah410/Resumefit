@@ -25,4 +25,5 @@ class AnalysisOut(BaseModel):
     missing_skills: list[str]
     matched_keywords: list[str]
     missing_keywords: list[str]
+    suggestions: list[str]
     created_at: datetime

@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     # Database (PostgreSQL via psycopg 3)
     database_url: str = "postgresql+psycopg://resumefit:resumefit@localhost:5432/resumefit"
 
+    # Gemini
+    gemini_api_key: str | None = None
+    gemini_model: str = "gemini-3.8-flash"
+
     # JWT / sessions. The secret has no default on purpose: the app refuses to start without it.
     jwt_secret: str
     jwt_algorithm: str = "HS256"

@@ -98,7 +98,7 @@ export default function Dashboard() {
             <button disabled={loading} className="w-full rounded-xl bg-indigo-600 px-4 py-3 font-semibold text-white transition hover:bg-indigo-700 disabled:cursor-not-allowed disabled:opacity-60">
               {loading ? 'Analyzing…' : 'Analyze resume'}
             </button>
-            <p className="text-xs leading-5 text-slate-500">Your analysis is saved to your account. This deterministic ATS estimate is informational and is not a hiring decision.</p>
+            <p className="text-xs leading-5 text-slate-500">Your analysis is saved to your account. Your resume and job description are sent to Gemini for improvement suggestions. The ATS estimate is informational and is not a hiring decision.</p>
           </form>
 
           <section aria-live="polite" className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -117,6 +117,12 @@ export default function Dashboard() {
                   <SkillList title="Skills not found in your resume" items={analysis.missing_skills} tone="bg-amber-50 text-amber-800" />
                   <SkillList title="Matched keywords" items={analysis.matched_keywords} tone="bg-sky-50 text-sky-800" />
                   <SkillList title="Missing keywords" items={analysis.missing_keywords} tone="bg-slate-100 text-slate-700" />
+                  <section>
+                    <h3 className="text-sm font-semibold text-slate-700">Gemini improvement suggestions</h3>
+                    <ul className="mt-3 list-disc space-y-2 pl-5 text-sm text-slate-700">
+                      {analysis.suggestions.map((suggestion, index) => <li key={`${index}-${suggestion}`}>{suggestion}</li>)}
+                    </ul>
+                  </section>
                 </div>
               </div>
               : <div className="mt-6 rounded-xl border border-dashed border-slate-300 p-8 text-center text-sm text-slate-500">

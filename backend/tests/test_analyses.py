@@ -1,7 +1,17 @@
 import uuid
 
+import pytest
+
 from app.models.analysis import ResumeAnalysis
 from tests.conftest import login, register
+
+
+@pytest.fixture(autouse=True)
+def mock_gemini_suggestions(monkeypatch):
+    monkeypatch.setattr(
+        "app.api.v1.analyses.generate_resume_suggestions",
+        lambda resume_text, job_description: ["Add a measurable result to your experience."],
+    )
 
 
 RESUME = (
@@ -33,9 +43,11 @@ def test_analysis_calculates_and_persists_result(client, db):
     assert 0 < result["ats_score"] < 100
     assert {"python", "react", "postgresql", "docker", "aws"} <= set(result["matched_skills"])
     assert {"communication", "project management"} <= set(result["missing_skills"])
+    assert result["suggestions"] == ["Add a measurable result to your experience."]
     assert "resume_text" not in result and "job_description" not in result
     saved = db.get(ResumeAnalysis, uuid.UUID(result["id"]))
     assert saved.resume_text == RESUME and saved.job_description == JOB
+    assert saved.suggestions == result["suggestions"]
     history = client.get("/api/v1/analyses", headers={"Authorization": f"Bearer {token}"})
     assert history.status_code == 200 and history.json()[0]["id"] == result["id"]
 
